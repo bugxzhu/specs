@@ -2,8 +2,6 @@
 
 This document serves as an entry point for understanding all of the data structures in filecoin.
 
-TODO: this should also include, or reference, how each data structure is serialized precisely.
-
 ## CID
 
 For most objects referenced by Filecoin, a Content Identifier (CID for short) is used. This is effectively a hash value, prefixed with its hash function (multihash) prepended with a few extra labels to inform applications about how to deserialize the given data. To learn more, take a look at the [CID Spec](https://github.com/ipld/cid). 
@@ -52,10 +50,6 @@ type Block struct {
 }
 ```
 
-### Serialization
-
-Blocks are currently serialized simply by CBOR marshaling them, using lower-camel-cased field names.
-
 ## Message
 
 ```go
@@ -66,9 +60,9 @@ type Message struct {
 	// When receiving a message from a user account the nonce in
 	// the message must match the expected nonce in the from actor.
 	// This prevents replay attacks.
-	Nonce Integer
+	Nonce Uint64
 
-	Value Integer
+	Value BigInteger
     
     GasPrice Integer
     GasLimit Integer
@@ -81,6 +75,7 @@ type Message struct {
 ### Parameter Encoding
 
 Parameters to methods get encoded as described in the [basic types](#basic-type-encodings) section below, and then put into a CBOR encoded array.
+(TODO: thinking about this, it might make more sense to just have `Params` be an array of things)
 
 ### Signing
 
@@ -95,9 +90,17 @@ type SignedMessage struct {
 
 The signature is a serialized signature over the serialized base message. For more details on how the signature itself is done, see the [signatures spec](signatures.md).
 
-### Serialization
+## MessageReceipt
 
-Messages and SignedMessages are currently serialized simply by CBOR marshaling them, using lower-camel-cased field names.
+```go
+type MessageReceipt struct {
+    ExitCode uint8
+
+    Return [][]byte
+
+    GasUsed BigInteger
+}
+```
 
 ## Message Receipt
 
@@ -126,19 +129,12 @@ type Actor struct {
     Head    Cid
     
     // Nonce is a counter of the number of messages this actor has sent
-    Nonce   Integer
+	Nonce   Uint64
     
     // Balance is this actors current balance of filecoin
-    Balance AttoFIL
+	Balance BigInteger
 }
 ```
-
-
-
-
-### Serialization
-
-Actors are currently serialized simply by CBOR marshaling them, using lower-camel-cased field names.
 
 ## State Tree
 
@@ -147,6 +143,7 @@ The state trie keeps track of all state in Filecoin. It is a map of addresses to
 ## HAMT
 
 TODO: link to spec for our CHAMP HAMT
+
 
 # Basic Type Encodings
 
@@ -274,3 +271,29 @@ if ((shift <size) && (sign bit of byte is set))
   /* sign extend */
   result |= - (1 << shift);
 ```
+
+# Filecoin Compact Serialization
+
+Datastructures in Filecoin are encoded as compactly as is reasonable. At a high level, each object is converted into an ordered array of its fields, then CBOR marshaled, and prepended with an object type tag.
+
+| object | tag  |
+|---|---|
+| block v1 | 43  |
+| message v1 | 44 |
+| signedMessage v1 | 45 |
+| actor v1 | 46 |
+
+For example, a message would be encoded as:
+
+```cbor
+tag<44>[msg.To, msg.From, msg.Nonce, msg.Value, msg.Method, msg.Params]
+```
+
+Each individual type should be encoded as specified:
+
+| type | encoding |
+| --- | ---- |
+| Uint64 | CBOR major type 0 |
+|  BigInteger | [CBOR bignum](https://tools.ietf.org/html/rfc7049#section-2.4.2) |
+| Address | CBOR major type 2 |
+
