@@ -1,4 +1,6 @@
-### What is the Filecoin Mining Process
+# Mining
+
+## What is the Filecoin Mining Process
 
 An active participant in the filecoin consensus process is a storage miner and expected consensus block proposer. They are responsible for storing data for the filecoin network and also for driving the filecoin consensus process. Miners should constantly be performing Proofs of SpaceTime, and also checking if they have a winning `ticket` to propose a block for each round. Rounds are currently set to take around 30 seconds, in order to account for network propagation around the world. The details of both processes are defined here.
 
@@ -310,12 +312,12 @@ HalvingPeriodBlocks = 6 * 365 * 24 * 60 * 2
 
 Note: Due to jitter in EC, and the gregorian calendar, there may be some error in the issuance schedule over time. This is expected to be small enough that it's not worth correcting for. Additionally, since the payout mechanism is transferring from the network account to the miner, there is no risk of minting *too much* FIL.
 
-### Open Questions
+## Open Questions
 
 - How should receipts for tipsets 'virtual blocks' be referenced? It is common for applications to provide the merkleproof of a receipt to prove that a transaction was successfully executed.
 
 
-### Future Work
+## Future Work
 There are many ideas for improving upon the storage miner, here are ideas that may be potentially implemented in the future.
 
 - **Sector Resealing**: Miners should be able to 're-seal' sectors, to allow them to take a set of sectors with mostly expired pieces, and combine the not-yet-expired pieces into a single (or multiple) sectors.
