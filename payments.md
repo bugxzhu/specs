@@ -1,10 +1,10 @@
 # Payments
 
-### What are payments
+## What are payments
 
-### What payments affect
+## What payments affect
 
-### Dependencies
+## Dependencies
 
 ## Miners Claiming Earnings
 
@@ -46,21 +46,21 @@ type PaymentBroker interface {
     // The value attached to the invocation is used as the deposit, and the channel
     // will expire and return all of its money to the owner after the given block height.
     CreateChannel(target Address, eol BlockHeight) ChannelID
-    
+
     // Update updates the payment channel with the given amounts, and sends the current
-    // committed amount to the target. This is useful when you want to checkpoint the 
+    // committed amount to the target. This is useful when you want to checkpoint the
     // value in a payment, but continue to use the channel afterwards.
     Update(channel ChannelID, amt *TokenAmount, sig Signature)
-    
+
     // Close is called by the target of a payment channel to cash out and close out
     // the payment channel. This is really a courtesy call, as the channel will
     // eventually time out and close on its own.
     Close(channel ChannelID, amt *TokenAmount, sig Signature)
-    
+
     // Extend can be used by the owner of a channel to add more funds to it and
     // extend the channels lifespan.
     Extend(target Address, channel ChannelID, eol BlockHeight)
-    
+
     // Reclaim is used by the owner of a channel to reclaim unspent funds in timed
     // out payment channels they own.
     Reclaim(target Address, channel ChannelID)
@@ -68,7 +68,7 @@ type PaymentBroker interface {
 
 // MakeSpendVoucher is used by the owner of a channel to create an offline payment
 // for the target. Note that any amount may be given, but the target gets to select
-// which of the vouchers you give them to cash out, and therefore any rational actor 
+// which of the vouchers you give them to cash out, and therefore any rational actor
 // will only ever keep the one with the largest amount. After calling this function,
 // you should send the returned SpendVoucher to the target out of band.
 func MakeSpendVoucher(ch ChannelID, amt *TokenAmount, sk PrivateKey) *SpendVoucher {
@@ -98,24 +98,24 @@ Lane state can be easily tracked on-chain with a compact bitfield.
 type SpendVoucher struct {
     // ID is the channel ID for this payment channel
     ID ChannelID
-    
+
     // Amount is the amount of FIL that this voucher can be redeemed for
     Amount *TokenAmount
-    
+
     // Nonce is a number that sets the ordering of vouchers. If you try to redeem
     // a voucher with an equal or lower nonce, the operation will fail. Nonces are
     // per lane.
     Nonce uint64
-    
+
     // Lane specifies which 'lane' of the payment channel this voucher is for.
     // Lanes may be either open or closed, a voucher for a closed lane may not be redeemed
     Lane uint64
-    
-    // Merges specifies a list of lane-nonce pairs that this voucher will close. 
+
+    // Merges specifies a list of lane-nonce pairs that this voucher will close.
     // This voucher may not be redeemed if any of the lanes specified here are already
     // closed, or their nonce specified here is lower than the nonce on-chain.
     Merges []Pair<uint64, uint64>
-    
+
     Sig Signature
 }
 ```
@@ -162,12 +162,12 @@ Open Questions:
 TODO: these bits were pulled out of a different doc, and describe strategies by which client payments to a miner might happen. We need to organize 'clients paying miners' better, unclear if it should be the same doc that talks about payment channel constructions.
 
 1. **Updates Contingent on Inclusion Proof**
-   - In this case, the miner must provide an inclusion proof that shows the client data is contained in one of the miners sectors on chain, and submit that along with the payment channel update.
-   - This can be pretty expensive for smaller files, and ideally, we make it to one of the latter two options
-   - This option does however allow clients to upload their files and leave.
+    - In this case, the miner must provide an inclusion proof that shows the client data is contained in one of the miners sectors on chain, and submit that along with the payment channel update.
+    - This can be pretty expensive for smaller files, and ideally, we make it to one of the latter two options
+    - This option does however allow clients to upload their files and leave.
 2. **Update Contingent on CommD Existence**
-   - For this, the client needs to wait around until the miner finishes packing a sector, and computing its commD. The client then signs a set of payment channel updates that are contingent on the given commD existing on chain.
-   - This route makes it difficult for miners to re-seal smaller files (really, small files just suck)
+    - For this, the client needs to wait around until the miner finishes packing a sector, and computing its commD. The client then signs a set of payment channel updates that are contingent on the given commD existing on chain.
+    - This route makes it difficult for miners to re-seal smaller files (really, small files just suck)
 3. **Reconciled Payment**
-   - In either of the above cases, the miner may go back to the client and say "Look, these payment channel updates you gave me are able to be cashed in right now, could you take them all and give me back a single update for a slightly smaller amount?".
-   - The slightly smaller amount could be the difference in transaction fees, meaning the client saves money, and the miner gets the same amount.
+    - In either of the above cases, the miner may go back to the client and say "Look, these payment channel updates you gave me are able to be cashed in right now, could you take them all and give me back a single update for a slightly smaller amount?".
+    - The slightly smaller amount could be the difference in transaction fees, meaning the client saves money, and the miner gets the same amount.

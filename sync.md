@@ -17,16 +17,16 @@ type Syncer struct {
 
 	// The known genesis tipset
 	genesis TipSet
-    
+
     // the current mode the syncer is in
     syncMode SyncMode
 
 	// TipSets known to be invalid
 	bad BadTipSetCache
-    
+
     // handle to the block sync service
     bsync BlockSync
-    
+
     // peer heads
     // Note: clear cache on disconnects
     peerHeads map[PeerID]Cid
@@ -56,9 +56,9 @@ func (syncer *Syncer) SyncBootstrap() {
         // not enough peers to sync yet...
         return
     }
-    
+
     selectedHead := selectHead(syncer.peerHeads)
-    
+
     cur := selectedHead
     var blockSet BlockSet
     for head.Height() > 0 {
@@ -67,24 +67,24 @@ func (syncer *Syncer) SyncBootstrap() {
         // not validate any state transitions
         blks := syncer.bsync.GetBlocks(head, RequestWidth)
         blockSet.Insert(blks)
-            
+
         head = blks.Last().Parents()
     }
-    
+
     genesis := blockSet.GetByHeight(0)
     if genesis != syncer.genesis {
         // TODO: handle this...
         Error("We synced to the wrong chain!")
         return
     }
-    
+
     // Fetch all the messages for all the blocks in this chain
     // There are many ways to make this more efficient. For now, do the dumb thing
     blockSet.ForEach(func(b Block) {
         // FetchMessages should use bitswap to fetch any messages we don't have locally
         FetchMessages(b)
     })
-    
+
     // Now, to validate some state transitions
     base := genesis
     for i := 1; i < selectedHead.Height(); i++ {
@@ -95,7 +95,7 @@ func (syncer *Syncer) SyncBootstrap() {
             return
         }
     }
-    
+
     blockSet.PersistTo(syncer.store)
     syncer.head = bset.Head()
     syncer.syncMode = CaughtUp
@@ -106,7 +106,7 @@ func selectHead(heads map[PeerID]TipSet) TipSet {
     sel := headsArr[0]
     for i := 1; i < len(headsArr); i++ {
         cur := headsArr[i]
-        
+
         if cur.IsAncestorOf(sel) {
             continue
         }
@@ -114,7 +114,7 @@ func selectHead(heads map[PeerID]TipSet) TipSet {
             sel = cur
             continue
         }
-        
+
         nca := NearestCommonAncestor(cur, sel)
         if sel.Height() - nca.Height() > ForkLengthThreshold {
         	// TODO: handle this better than refusing to sync
@@ -138,7 +138,7 @@ func (syncer *Syncer) SyncCaughtUp(maybeHead TipSet) error {
 
 	// possibleTs enumerates possible tipsets that are the union
     // of tipsets from the chain and the store
-	for _, ts := range possibleTs(chain[1:]) { 
+	for _, ts := range possibleTs(chain[1:]) {
 		if err := consensus.Validate(ts, store); err != nil {
 			return err
 		}
@@ -153,7 +153,7 @@ func (syncer *Syncer) SyncCaughtUp(maybeHead TipSet) error {
 
 func (syncer *Syncer) collectChainCaughtUp(maybeHead TipSet) (Chain, error) {
 	// fetch tipset and messages via bitswap
-	ts := tipsetFromCidOverNet(newHead) 
+	ts := tipsetFromCidOverNet(newHead)
 
 	var chain Chain
 	for {
@@ -165,7 +165,7 @@ func (syncer *Syncer) collectChainCaughtUp(maybeHead TipSet) (Chain, error) {
 
 		chain.InsertFront(ts)
 
-		if syncer.store.Contains(ts) { 
+		if syncer.store.Contains(ts) {
 			// Store has record of this tipset.
 			return chain, nil
 		}
@@ -194,7 +194,7 @@ After collecting a chain up to an ancestor tipset that was previously synced to 
 
 To sync new tipsets the `caught up` syncing protocol first runs a consensus validation check on the tipset.  If any tipset is invalid the syncing protocol finishes.  If a tipset is valid the syncer adds the tipset to the chain store.  The syncing protocol then checks whether the tipset is heavier than the current head using the consensus weighting rules.  If it is heavier the chain updates the state of the node to account for the new heaviest tipset.
 
-# Dependencies
+## Dependencies
 Things that affect the chain syncing protocol.
 
 **Consensus protocol**
@@ -205,7 +205,7 @@ Things that affect the chain syncing protocol.
 
 - The current chain syncing protocol requires that the chain store never stores an invalid tipset.
 
-# Open Questions
+## Open Questions
 - Secure bootstrapping in `syncing` mode
 - How do we handle the lag between the initial head bootstrapped in `syncing` mode and the network head once the first `SyncBootstrap` call is complete?  Likely we'll need multiple `SyncBootstrap` calls.  Should they be parallelized?
-- The properties of the chain store implementation have significant impact on the design of the syncing protocol and the syncing protocol's resistance to Denial Of Service (DOS) attacks.  For example if the chain store naively keeps all blocks in storage nodes are more vulnerable to running out of space.  As another example the syncer assumes that the store always contains a punctual ancestor of the heaviest chain. Should the spec grow to include properties of chain storage so that the syncing protocol can guarantee a level of DOS resistance?  Should chain storage be completely up to the implementation?  Should the chain storage spec be a part of the syncing protocol?  
+- The properties of the chain store implementation have significant impact on the design of the syncing protocol and the syncing protocol's resistance to Denial Of Service (DOS) attacks.  For example if the chain store naively keeps all blocks in storage nodes are more vulnerable to running out of space.  As another example the syncer assumes that the store always contains a punctual ancestor of the heaviest chain. Should the spec grow to include properties of chain storage so that the syncing protocol can guarantee a level of DOS resistance?  Should chain storage be completely up to the implementation?  Should the chain storage spec be a part of the syncing protocol?

@@ -25,7 +25,7 @@ To learn more, take a look at the [Address Spec](https://github.com/filecoin-pro
 
 ## CID
 
-For most objects referenced by Filecoin, a Content Identifier (CID for short) is used. This is effectively a hash value, prefixed with its hash function (multihash) prepended with a few extra labels to inform applications about how to deserialize the given data. To learn more, take a look at the [CID Spec](https://github.com/ipld/cid). 
+For most objects referenced by Filecoin, a Content Identifier (CID for short) is used. This is effectively a hash value, prefixed with its hash function (multihash) prepended with a few extra labels to inform applications about how to deserialize the given data. To learn more, take a look at the [CID Spec](https://github.com/ipld/cid).
 
 CIDs are serialized by applying binary multibase encoding, then encoding that as a CBOR byte array with a tag of 42.
 
@@ -41,7 +41,7 @@ type Block struct {
 
 	// Tickets are the winning ticket that were submitted with this block.
 	Tickets []Ticket
-    
+
     // ElectionProof is a signature over the final ticket that proves this miner
     // is the leader at this round
     ElectionProof Signature
@@ -56,7 +56,7 @@ type Block struct {
 
 	// Height is the chain height of this block.
 	Height Uint64
-    
+
     // StateRoot is a cid pointer to the state tree after application of the
 	// transactions state transitions.
 	StateRoot Cid
@@ -81,14 +81,14 @@ Blocks are currently serialized simply by CBOR marshaling them, using lower-came
 type Message struct {
 	To   Address
 	From Address
-	
+
 	// When receiving a message from a user account the nonce in
 	// the message must match the expected nonce in the from actor.
 	// This prevents replay attacks.
 	Nonce Integer
 
 	Value Integer
-    
+
     GasPrice Integer
     GasLimit Integer
 
@@ -125,7 +125,7 @@ type MessageReceipt struct {
     ExitCode uint8
 
     Return []byte
-    
+
     GasUsed Integer
 }
 ```
@@ -142,13 +142,13 @@ Message receipts are currently serialized simply by CBOR marshaling them, using 
 type Actor struct {
     // Code is a pointer to the code object for this actor
 	Code    Cid
-    
+
     // Head is a pointer to the root of this actors state
     Head    Cid
-    
+
     // Nonce is a counter of the number of messages this actor has sent
     Nonce   Integer
-    
+
     // Balance is this actors current balance of filecoin
     Balance AttoFIL
 }
@@ -169,47 +169,47 @@ The state trie keeps track of all state in Filecoin. It is a map of addresses to
 
 TODO: link to spec for our CHAMP HAMT
 
-# Basic Type Encodings
+## Basic Type Encodings
 
 Types that appear in messages or in state must be encoded as described here.
 
-#### `PublicKey`
+### `PublicKey`
 
 The public key type is simply an array of bytes. (TODO: discuss specific encoding of key types, for now just calling it bytes is sufficient)
 
-#### `BytesAmount`
+### `BytesAmount`
 BytesAmount is just a re-typed Integer.
 
-#### `PeerID`
+### `PeerID`
 PeerID is just the serialized bytes of a libp2p peer ID.
 
 Spec incomplete, take a look at this PR: https://github.com/libp2p/specs/pull/100
 
-#### `Integer`
+### `Integer`
 
 Integers are encoded as LEB128 signed integers.
 
-#### `BitField`
+### `BitField`
 
 Bitfields are a set of bits. Encoding still TBD, but it needs to be very compact. We can assume that most often, ranges of bits will be set, or not set, and use that to our advantage here. Some form of run length encoding may work well.
 
-#### `SectorSet`
+### `SectorSet`
 
 TODO
 
-#### `FaultSet`
+### `FaultSet`
 
 A fault set is a BitField and a block height, encoding TBD.
 
-#### `BlockHeader`
+### `BlockHeader`
 
 BlockHeader is a serialized `Block`.
 
-#### `SealProof`
+### `SealProof`
 
 SealProof is an array of bytes.
 
-#### `TokenAmount`
+### `TokenAmount`
 
 TokenAmount is a re-typed Integer.
 
@@ -220,7 +220,7 @@ TokenAmount is a re-typed Integer.
 
 This is taken from the Dwarf Standard 4, Appendix C
 
-#### Encode unsigned LEB128
+### Encode unsigned LEB128
 
 ```c
 do
@@ -234,7 +234,7 @@ do
 
 ```
 
-#### Encode signed LEB128
+### Encode signed LEB128
 
 ```c
 more = 1;
@@ -261,7 +261,7 @@ while(more)
 }
 ```
 
-#### Decode unsigned LEB128
+### Decode unsigned LEB128
 
 ```c
 result = 0;
@@ -276,7 +276,7 @@ while(true)
 }
 ```
 
-#### Decode signed LEB128
+### Decode signed LEB128
 
 ```c
 result = 0;

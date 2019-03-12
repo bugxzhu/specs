@@ -1,10 +1,10 @@
 # `Retrieval Market` V0
 
-### What is the `Retrieval Market`
+## What is the `Retrieval Market`
 
-### What the `Retrieval Market` affects
+## What the `Retrieval Market` affects
 
-### Dependencies
+## Dependencies
 
 ## Components
 
@@ -25,11 +25,11 @@ The v0 `retrieval market` will initially be implemented as two `libp2p` services
 type RetDealProposal struct {
     // Ref is the cid of the data to be retrieved
     Ref Cid
-    
+
     // Price is the total amount that the client is willing to pay for the
     // retrieval of the data
     Price TokenAmount
-    
+
     // Payment is a payment info from the client to the retrieval miner for the data
     Payment PaymentInfo
 }
@@ -56,9 +56,9 @@ type Block struct {
 }
 ```
 
-`Retrieval miners` should also support a query service that allows clients to request pricing information from a miner. 
+`Retrieval miners` should also support a query service that allows clients to request pricing information from a miner.
 
-The query should include the CID of the piece that the client is interested in retrieving. The response contains whether or not the miner will serve that data, the price they will accept for it. 
+The query should include the CID of the piece that the client is interested in retrieving. The response contains whether or not the miner will serve that data, the price they will accept for it.
 
 ```go
 type RetQuery struct {

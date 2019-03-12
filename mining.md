@@ -23,7 +23,7 @@ Storage miners must continually produce Proofs of SpaceTime over their storage t
 
 To initially become a miner, a miner first register a new miner actor on-chain. This is done through the storage market actor's [`CreateMiner`](actors.md#createminer) method. The call will then create a new miner actor instance and return its address.
 
-The next step is to place one or more storage market asks on the market. This is done through the storage markets [`AddAsk`](actors.md#addask) method. A miner may create a single ask for their entire storage, or partition their storage up in some way with multiple asks (at potentially different prices). 
+The next step is to place one or more storage market asks on the market. This is done through the storage markets [`AddAsk`](actors.md#addask) method. A miner may create a single ask for their entire storage, or partition their storage up in some way with multiple asks (at potentially different prices).
 
 After that, they need to make deals with clients and begin filling up sectors with data. For more information on making deals, see the section on [deal flow](storage-market.md#deal-flow).
 
@@ -68,7 +68,8 @@ When the miner has completed their PoSt, they must submit it to the network by c
 
 1. **Standard Submission**: A standard submission is one that makes it on-chain before the end of the proving period. The length of time it takes to compute the PoSts is set such that there is a grace period between then and the actual end of the proving period, so that the effects of network congestion on typical miner actions is minimized.
 2. **Penalized Submission**: A penalized submission is one that makes it on-chain after the end of the proving period, but before the generation attack threshold. These submissions count as valid PoSt submissions, but the miner must pay a penalty for their late submission. (See '[Faults](../faults.md)' for more information)
-   - Note: In this case, the next PoSt should still be started at the beginning of the proving period, even if the current one is not yet complete. Miners must submit one PoSt per proving period.
+
+> Note: In this case, the next PoSt should still be started at the beginning of the proving period, even if the current one is not yet complete. Miners must submit one PoSt per proving period.
 
 Along with the PoSt submission, miners may also subit a set of sectors that they wish to remove from their proving set. This is done by selecting the sectors in the 'done' bitfield passed to `SubmitPoSt`.
 
@@ -86,7 +87,7 @@ If a miner is slashed for failing to submit their PoSt on time, they currently l
 
 TODO: disambiguate the two collaterals across the entire spec
 
-Review Discussion Note: Taking all of a miners collateral for going over the deadline for PoSt submission is really really painful, and is likely to dissuade people from even mining filecoin in the first place (If my internet going out could cause me to lose a very large amount of money, that leads to some pretty hard decisions around profitability). One potential strategy could be to only penalize miners for the amount of sectors they could have generated in that timeframe. 
+Review Discussion Note: Taking all of a miners collateral for going over the deadline for PoSt submission is really really painful, and is likely to dissuade people from even mining filecoin in the first place (If my internet going out could cause me to lose a very large amount of money, that leads to some pretty hard decisions around profitability). One potential strategy could be to only penalize miners for the amount of sectors they could have generated in that timeframe.
 
 ## Mining Blocks
 
@@ -118,7 +119,7 @@ func VerifyBlock(blk Block) {
     if !ValidateSignature(blk.Signature, pubk, blk) {
         Fatal("invalid block signature")
     }
-    
+
     // 2. Verify ParentWeight
     if blk.ParentWeight != ComputeWeight(blk.Parents) {
         Fatal("invalid parent weight")
@@ -128,23 +129,23 @@ func VerifyBlock(blk Block) {
     if !VerifyTickets(blk) {
         Fatal("tickets were invalid")
     }
-    
+
     // 4. Verify ElectionProof
     randomnessLookbackTipset := RandomnessLookback(blk)
     lookbackTicket := minTicket(randomnessLookbackTipset)
     challenge := sha256.Sum(lookbackTicket)
-    
+
     if !ValidateSignature(blk.ElectionProof, pubk, challenge) {
         Fatal("election proof was not a valid signature of the last ticket")
     }
-    
+
     powerLookbackTipset := PowerLookback(blk)
     minerPower := GetPower(powerLookbackTipset.state, blk.Miner)
     totalPower := GetTotalPower(powerLookbackTipset.state)
     if !IsProofAWinner(blk.ElectionProof, minerPower, totalPower) {
         Fatal("election proof was not a winner")
     }
-        
+
     // 5. Verify StateRoot
     state := GetParentState(blk.Parents)
     for i, msg := range blk.Messages {
@@ -178,18 +179,18 @@ func VerifyTickets(b Block) error {
     // Start with the `Tickets` array
     // get the smallest ticket from the blocks parent tipset
     parTicket := GetSmallestTicket(b.Parents)
-    
+
     // Verify each ticket in the chain of tickets. There will be one ticket
     // plus one ticket for each failed election attempt.
     for _, ticket := range b.Tickets {
     	challenge := sha256.Sum(parTicket.Signature)
-    	
+
         // Check VDF
         if !VerifyVDF(ticket.VDFProof, ticket.VDFResult, challenge) {
             return "VDF was not run properly"
         }
-        
-        // Check VRF   
+
+        // Check VRF
     	pubk := getPublicKeyForMiner(b.Miner)
     	if !VerifySignature(ticket.Signature, pubk, ticket.VDFResult) {
         	return "Ticket was not a valid signature over the parent ticket"
@@ -197,7 +198,7 @@ func VerifyTickets(b Block) error {
         // in case mining this block generated multiple tickets
         parTicket = ticket
     }
-    
+
     return nil
 }
 ```
@@ -207,7 +208,7 @@ If all of this lines up, the block is valid. The miner repeats this for all bloc
 
 Once they've ensured all blocks in the heaviest TipSet received were properly mined, they can mine on top of it. If they weren't, the miner may need to ensure the next heaviest `Tipset` was properly mined. This might mean the same `Tipset` with invalid blocks removed, or an altogether different one.
 
-If no valid blocks are received, a miner may mine atop the same `TipSet` running leader election again using the next ticket in the ticket chain, and also generating a [new ticket](./expected-consensus.md#losing-tickets) in the process (see the [expected consensus spec](./expected-consensus.md#losing-tickets) for more). 
+If no valid blocks are received, a miner may mine atop the same `TipSet` running leader election again using the next ticket in the ticket chain, and also generating a [new ticket](./expected-consensus.md#losing-tickets) in the process (see the [expected consensus spec](./expected-consensus.md#losing-tickets) for more).
 
 ### Ticket Generation
 
@@ -247,7 +248,7 @@ To create a block, the eligible miner must compute a few fields:
   - For each block in the parent set, ordered by their tickets:
     - Apply each message in the block to the parent state, in order. If a message was already applied in a previous block, skip it.
     - Transaction fees are given to the miner of the block that the first occurance of the message is included in. If there are two blocks in the parent set, and they both contain the exact same set of messages, the second one will receive no fees.
-    - It is valid for messages in two different blocks of the parent set to conflict, that is, A conflicting message from the combined set of messages will always error.  Regardless of conflicts all messages are applied to the state. 
+    - It is valid for messages in two different blocks of the parent set to conflict, that is, A conflicting message from the combined set of messages will always error.  Regardless of conflicts all messages are applied to the state.
     - TODO: define message conflicts in the state-machine doc, and link to it from here
 - `MsgRoot` - To compute this:
   - Select a set of messages from the mempool to include in the block.
