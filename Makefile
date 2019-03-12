@@ -13,9 +13,10 @@ bikeshed.prepare:
 
 bikeshed.local: bikeshed.prepare
 	bikeshed spec -f spec.bs
+	mv spec.html docs/index.html
 
 bikeshed: bikeshed.prepare
-	curl https://api.csswg.org/bikeshed/ -F file=@spec.bs -F force=1 > spec.html
+	curl https://api.csswg.org/bikeshed/ -F file=@spec.bs -F force=1 > docs/index.html
 
 cover.jpg:
 	cover/make-today-cover
