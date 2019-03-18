@@ -1214,7 +1214,7 @@ Possible extra rowspan handling
 </style>
   <meta content="Bikeshed version 26b7f85c77076bbd6f3130b147cbf6aec50bb06d" name="generator">
   <link href="https://github.com/filecoin-project/spec" rel="canonical">
-  <meta content="9ed8a5007e397a6fef24f3133c852083d3eb5297" name="document-revision">
+  <meta content="2494f819e362d6df4e0fc1c8c929f1054caa03ff" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1424,7 +1424,7 @@ pre .property::before, pre .property::after {
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">Filecoin Spec</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Living Standard, <time class="dt-updated" datetime="2019-03-12">12 March 2019</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Living Standard, <time class="dt-updated" datetime="2019-03-18">18 March 2019</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -1438,7 +1438,7 @@ pre .property::before, pre .property::after {
    <div data-fill-with="warning"></div>
    <p class="copyright" data-fill-with="copyright"><a href="http://creativecommons.org/publicdomain/zero/1.0/" rel="license"><img alt="CC0" src="https://licensebuttons.net/p/zero/1.0/80x15.png"></a> To the extent possible under law, the editors have waived all copyright
 and related or neighboring rights to this work.
-In addition, as of 12 March 2019,
+In addition, as of 18 March 2019,
 the editors have made this specification available under the <a href="http://www.openwebfoundation.org/legal/the-owf-1-0-agreements/owfa-1-0" rel="license">Open Web Foundation Agreement Version 1.0</a>,
 which is available at http://www.openwebfoundation.org/legal/the-owf-1-0-agreements/owfa-1-0.
 Parts of this work may be from another specification document.  If so, those parts are instead covered by the license of that specification document. </p>
@@ -3746,7 +3746,7 @@ as the system has resolvers for them).</p>
      <p>miner Address</p>
    </ul>
    <p>Return: None</p>
-<pre class="language-go highlight"><c- a>func</c-> SlashStorageFault<c- p>(</c->miner Address<c- p>)</c-> <c- p>{</c->
+<pre class="language-go highlight"><c- a>func</c-> SlashStorageFault<c- p>()</c-> <c- p>{</c->
 	<c- k>if</c-> self<c- p>.</c->SlashedAt <c- p>></c-> <c- mi>0</c-> <c- p>{</c->
         Fatal<c- p>(</c-><c- s>"miner already slashed"</c-><c- p>)</c->
 	<c- p>}</c->
